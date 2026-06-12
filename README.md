@@ -2,10 +2,6 @@
 
 A web-based macroeconomic asset allocation and correlation monitor. Tracks **60+ assets** across US equities, US fixed income, A-share ETFs, and commodities, calculating dynamic correlations (GARCH + Kalman Filter) and detecting anomaly signals (Z-scores) to guide portfolio allocation.
 
-> **Acknowledgments**
-> * The core analytical framework and asset allocation insights were inspired by the excellent discussions on the [《面基》播客 (资产配置与有效前沿：去找更好的，更不一样的，更贴近时代的)](https://www.xiaoyuzhoufm.com/episode/6a097340e1eb34a9398d4dc9).
-> * The GARCH + Kalman Filter dynamic correlation algorithm and the Markowitz Efficient Frontier optimization architecture were adapted from [TwoPendulum/portfolio-analytics-suite](https://github.com/TwoPendulum/portfolio-analytics-suite).
-
 ## Architecture
 
 *   **Backend**: Python, FastAPI, Pandas, Tushare, yfinance, PostgreSQL
