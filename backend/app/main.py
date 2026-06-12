@@ -8,7 +8,7 @@ import os
 from app.routers import analysis, frontier, signals
 from app.services.data_service import data_service
 
-SCHEDULER_ENABLED = os.getenv("STRATEGY_SCHEDULER", "true").lower() == "true"
+SCHEDULER_ENABLED = os.getenv("STRATEGY_SCHEDULER", "false").lower() == "true" and bool(os.getenv("STRATEGY_DATA_DIR"))
 
 
 @asynccontextmanager
@@ -78,9 +78,3 @@ async def root():
 async def health():
     from datetime import datetime
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
-
-
-@app.get("/api/v1/signals/scheduler/status")
-async def scheduler_status():
-    from app.services.strategy_scheduler import get_scheduler_status
-    return get_scheduler_status()

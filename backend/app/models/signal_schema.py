@@ -1,11 +1,7 @@
 from pydantic import BaseModel
-from typing import Literal, Optional
+from typing import Optional
 
-StrategyId = Literal[
-    "macro-6cycle", "sharpe-rotation", "weekend-arb",
-    "csi500-timing", "us-fusion", "cn-us-hk-timing",
-    "spmo-usmv-64",
-]
+StrategyId = str
 
 
 class HoldingsItem(BaseModel):

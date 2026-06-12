@@ -10,71 +10,26 @@ import {
   Legend, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 
-const STRATEGY_IDS = [
-  "macro-6cycle", "sharpe-rotation", "weekend-arb",
-  "csi500-timing", "us-fusion", "cn-us-hk-timing",
-  "spmo-usmv-64",
-] as const;
+type StrategySubTab = "overview" | string;
 
-type StrategySubTab = "overview" | (typeof STRATEGY_IDS)[number];
+const TAB_COLORS = ["text-blue-400", "text-green-400", "text-purple-400", "text-yellow-400", "text-orange-400", "text-cyan-400", "text-pink-400", "text-red-400"];
 
-const STRATEGY_META: Record<string, { color: string; icon: React.ReactNode; desc: string }> = {
-  "macro-6cycle": {
-    color: "text-blue-400",
-    icon: <Activity size={18} />,
-    desc: "基于经济周期的风险平价轮动",
-  },
-  "sharpe-rotation": {
-    color: "text-green-400",
-    icon: <TrendingUp size={18} />,
-    desc: "21日夏普比率的ETF轮动策略",
-  },
-  "weekend-arb": {
-    color: "text-purple-400",
-    icon: <TrendingUp size={18} />,
-    desc: "5指数周末做多（沪深300/500/1000/2000/创业板）",
-  },
-  "csi500-timing": {
-    color: "text-yellow-400",
-    icon: <Activity size={18} />,
-    desc: "MAB+基差+周末动量的择时策略",
-  },
-  "us-fusion": {
-    color: "text-orange-400",
-    icon: <TrendingUp size={18} />,
-    desc: "SPMO/OFF5/USMV 融合策略",
-  },
-  "cn-us-hk-timing": {
-    color: "text-cyan-400",
-    icon: <Activity size={18} />,
-    desc: "中港美股动量/均线择时",
-  },
-  "spmo-usmv-64": {
-    color: "text-pink-400",
-    icon: <TrendingUp size={18} />,
-    desc: "SPMO/USMV 6:4 美股动量+低波择时",
-  },
-};
-
-function CycleBadge({ cycleCode, cycleName }: { cycleCode: number; cycleName: string }) {
-  const colors: Record<number, string> = {
-    0: "bg-gray-500/20 text-gray-300 border-gray-500/30",
-    1: "bg-green-500/20 text-green-400 border-green-500/30",
-    2: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    3: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    4: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    5: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    6: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-  };
-  return (
-    <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border", colors[cycleCode] || colors[0])}>
-      周期{cycleCode}: {cycleName}
-    </span>
-  );
+function getMeta(strategyId: string) {
+  const idx = Math.abs(hashCode(strategyId)) % TAB_COLORS.length;
+  return { color: TAB_COLORS[idx], icon: <Activity size={18} /> };
 }
 
+function hashCode(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return h;
+}
+
+// Legacy strategy-specific detail components kept for backward compatibility
+// These render when signal_detail contains the matching keys
+
 function StrategyCard({ data, onSelect }: { data: SignalOverview; onSelect: () => void }) {
-  const meta = STRATEGY_META[data.strategy_id] || { color: "text-gray-400", icon: <Activity size={18} />, desc: "" };
+  const meta = getMeta(data.strategy_id);
   const detail = data.signal_detail;
 
   return (
@@ -89,49 +44,14 @@ function StrategyCard({ data, onSelect }: { data: SignalOverview; onSelect: () =
         </div>
         <span className="text-xs text-gray-500 font-mono">{data.signal_date}</span>
       </div>
-      <p className="text-xs text-gray-500 mb-3">{meta.desc}</p>
 
-      {/* Signal-specific badges */}
+      {/* Generic signal_detail badges */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {data.strategy_id === "weekend-arb" && detail.direction !== undefined && (
-          <span className={clsx(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border",
-            detail.direction === 1
-              ? "bg-green-500/20 text-green-400 border-green-500/30"
-              : "bg-gray-500/20 text-gray-400 border-gray-500/30"
-          )}>
-            {detail.direction === 1 ? "做多信号" : "空仓"}
+        {Object.entries(detail).slice(0, 4).map(([key, val]) => (
+          <span key={key} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border bg-gray-500/10 text-gray-300 border-gray-500/20">
+            {key}: {typeof val === "object" ? "..." : String(val)}
           </span>
-        )}
-        {data.strategy_id === "macro-6cycle" && detail.cycle_code !== undefined && (
-          <CycleBadge cycleCode={detail.cycle_code as number} cycleName={(detail.cycle_name as string) || ""} />
-        )}
-        {data.strategy_id === "sharpe-rotation" && detail.ma_above_252 !== undefined && (
-          <span className={clsx(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border",
-            detail.ma_above_252 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"
-          )}>
-            万得全A {detail.ma_above_252 ? "站上" : "跌破"} MA252
-          </span>
-        )}
-        {(data.strategy_id === "spmo-usmv-64" || data.strategy_id === "cn-us-hk-timing") && detail.timing_weight != null && (
-          <span className={clsx(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border",
-            (detail.timing_weight as number) > 0.5 ? "bg-green-500/20 text-green-400 border-green-500/30" :
-            (detail.timing_weight as number) > 0 ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" :
-            "bg-red-500/20 text-red-400 border-red-500/30"
-          )}>
-            仓位 {((detail.timing_weight as number) * 100).toFixed(0)}%
-          </span>
-        )}
-        {data.strategy_id === "spmo-usmv-64" && detail.vol_regime != null && (
-          <span className={clsx(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border",
-            detail.vol_regime === "long" ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-orange-500/20 text-orange-400 border-orange-500/30"
-          )}>
-            {String(detail.vol_regime) === "long" ? "低波周期" : "高波周期"}
-          </span>
-        )}
+        ))}
       </div>
 
       {/* Holdings */}
@@ -521,7 +441,7 @@ function CnUsHkTimingDetail({ detail }: { detail: Record<string, unknown> }) {
 // ── Strategy Detail View ─────────────────────────────────────
 
 function StrategyDetailView({ strategyId, overview }: { strategyId: string; overview: SignalOverview }) {
-  const meta = STRATEGY_META[strategyId] || { color: "text-gray-400", icon: <Activity size={18} />, desc: "" };
+  const meta = getMeta(strategyId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const detail = overview.signal_detail as Record<string, any>;
 
@@ -532,45 +452,22 @@ function StrategyDetailView({ strategyId, overview }: { strategyId: string; over
         <span className={meta.color}>{meta.icon}</span>
         <div>
           <h3 className="text-xl font-semibold text-white">{overview.strategy_name}</h3>
-          <p className="text-sm text-gray-500">{meta.desc} | 信号日期: {overview.signal_date}</p>
+          <p className="text-sm text-gray-500">信号日期: {overview.signal_date}</p>
         </div>
       </div>
 
-      {/* Signal-specific badges */}
-      {(strategyId === "macro-6cycle" || strategyId === "sharpe-rotation" || strategyId === "weekend-arb") ? (
+      {/* Generic signal_detail badges */}
+      {Object.keys(detail).length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {strategyId === "weekend-arb" && detail.direction !== undefined ? (
-            <span className={clsx(
-              "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border",
-              detail.direction === 1
-                ? "bg-green-500/20 text-green-400 border-green-500/30"
-                : "bg-gray-500/20 text-gray-400 border-gray-500/30"
-            )}>
-              {detail.direction === 1 ? "做多信号" : "空仓"}
-            </span>
-          ) : null}
-          {strategyId === "macro-6cycle" && detail.cycle_code !== undefined ? (
-            <CycleBadge cycleCode={detail.cycle_code} cycleName={detail.cycle_name || ""} />
-          ) : null}
-          {strategyId === "sharpe-rotation" && detail.ma_above_252 !== undefined ? (
-            <span className={clsx(
-              "inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border",
-              detail.ma_above_252 ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"
-            )}>
-              万得全A {detail.ma_above_252 ? "站上" : "跌破"} MA252
-            </span>
-          ) : null}
+          {Object.entries(detail).map(([key, val]) => {
+            if (typeof val === "object") return null;
+            return (
+              <span key={key} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border bg-gray-500/10 text-gray-300 border-gray-500/20">
+                {key}: {String(val)}
+              </span>
+            );
+          })}
         </div>
-      ) : null}
-
-      {/* Momentum Timing Detail for spmo-usmv-64 */}
-      {strategyId === "spmo-usmv-64" && detail && (
-        <MomentumTimingDetail detail={detail} />
-      )}
-
-      {/* Multi-region timing detail for cn-us-hk-timing */}
-      {strategyId === "cn-us-hk-timing" && detail.current_situation && (
-        <CnUsHkTimingDetail detail={detail} />
       )}
 
       {/* Holdings */}
@@ -690,22 +587,21 @@ export default function StrategySignals() {
         >
           Overview
         </button>
-        {STRATEGY_IDS.map(sid => {
-          const meta = STRATEGY_META[sid];
-          const signal = signals.find(s => s.strategy_id === sid);
+        {signals.map(s => {
+          const meta = getMeta(s.strategy_id);
           return (
             <button
-              key={sid}
-              onClick={() => setSubTab(sid)}
+              key={s.strategy_id}
+              onClick={() => setSubTab(s.strategy_id)}
               className={clsx(
                 "flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                subTab === sid
+                subTab === s.strategy_id
                   ? "border-accent text-accent"
                   : "border-transparent text-gray-400 hover:text-gray-300"
               )}
             >
-              {meta?.icon}
-              {signal?.strategy_name || sid}
+              {meta.icon}
+              {s.strategy_name}
             </button>
           );
         })}
