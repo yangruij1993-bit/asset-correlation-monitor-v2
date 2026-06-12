@@ -1,6 +1,6 @@
 # Asset Correlation Monitor
 
-A web-based macroeconomic asset allocation and correlation monitor. Tracks **60+ assets** across US equities, US fixed income, A-share ETFs, and commodities, calculating rolling correlations, volatility, returns, and detecting anomaly signals (Z-scores) to guide portfolio allocation.
+A web-based macroeconomic asset allocation and correlation monitor. Tracks **60+ assets** across US equities, US fixed income, A-share ETFs, and commodities, calculating dynamic correlations (GARCH + Kalman Filter) and detecting anomaly signals (Z-scores) to guide portfolio allocation.
 
 > **Acknowledgments**
 > * The core analytical framework and asset allocation insights were inspired by the excellent discussions on the [《面基》播客 (资产配置与有效前沿：去找更好的，更不一样的，更贴近时代的)](https://www.xiaoyuzhoufm.com/episode/6a097340e1eb34a9398d4dc9).
@@ -18,10 +18,10 @@ A web-based macroeconomic asset allocation and correlation monitor. Tracks **60+
 *   **Dynamic Correlation (Kalman Filter)**: Replaces standard rolling windows with a GARCH(1,1) + 1D Kalman Filter (random walk) algorithm to eliminate "ghost effects", offering 3 sensitivity tiers (Fast / Standard / Smooth).
 *   **Efficient Frontier Optimizer**: A standalone sandbox to run Markowitz mean-variance optimization across all 19 assets using the latest Smooth Kalman covariance matrix. Features Max Sharpe, Min Vol, and editable forward estimates with localStorage persistence.
 *   **Overview Dashboard**: Summary statistics (CAGR, Vol, Max DD) and Correlation Heatmaps (Fast vs Smooth sensitivities), sorted by historical volatility within each group.
-*   **Rolling Time Series (Multi-Line)**: Select a base asset to view N−1 correlation lines simultaneously. Shows rolling volatility for all assets at once.
+*   **Rolling Correlation Time Series**: Select a base asset to view its dynamic correlation with all other assets simultaneously.
 *   **Anomaly Signals**: Z-Score based alerting for ETF pairs diverging from historical norms.
+*   **Strategy Signal Plugin**: Drop a JSON file into `strategies/` to plug in any strategy's signals, holdings, and NAV curve. No backend code changes needed. See [STRATEGIES.md](STRATEGIES.md) for the spec.
 *   **Insights Panel**: Auto-generated regime notes and allocation suggestions based on current correlations.
-*   **Stale Response Protection**: Tracks latest group/window params to ignore stale Promise resolves.
 *   **Custom Hover Tooltips**: Hovering over tickers in Summary, Forward Table, Custom Portfolio, and Anomaly Signals shows full asset definitions (e.g. "BTC" → "Bitcoin (USD)").
 
 ## Recent Fixes
