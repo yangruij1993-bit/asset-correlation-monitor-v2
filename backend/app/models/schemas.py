@@ -1,0 +1,74 @@
+from pydantic import BaseModel
+from typing import List, Dict, Optional
+
+class RefreshResponse(BaseModel):
+    status: str
+    message: str
+    last_date: str
+
+class SummaryStat(BaseModel):
+    ticker: str
+    cagr_ytd: Optional[float]
+    cagr_1y: Optional[float]
+    cagr_3y: Optional[float]
+    cagr_5y: Optional[float]
+    cagr_all: Optional[float]
+    vol_all: Optional[float]
+    max_dd_all: Optional[float]
+
+class TimeSeriesPoint(BaseModel):
+    date: str
+    value: float
+
+class RollingResponse(BaseModel):
+    sensitivity: str
+    data: Dict[str, List[TimeSeriesPoint]]
+
+class MatrixResponse(BaseModel):
+    tickers: List[str]
+    matrix: List[List[float]]
+
+class AnomalySignal(BaseModel):
+    pair: str
+    current_corr: float
+    mean_corr: float
+    std_corr: float
+    z_score: float
+    signal: str  # e.g., "Normal", "Warning", "Alert"
+
+class InsightResponse(BaseModel):
+    regime_notes: List[str]
+    allocation_suggestions: List[str]
+
+class FrontierRequest(BaseModel):
+    tickers: List[str]
+    mu: List[float]
+    sigma: List[float]
+    rf: float = 0.045
+    allowShort: bool = False
+    nPoints: int = 100
+
+class PortfolioStatsRequest(BaseModel):
+    tickers: List[str]
+    mu: List[float]
+    sigma: List[float]
+    weights: List[float]
+    rf: float = 0.045
+
+class PortfolioPoint(BaseModel):
+    weights: List[float]
+    ret: float
+    vol: float
+    sharpe: float
+
+class AssetPoints(BaseModel):
+    tickers: List[str]
+    vol: List[float]
+    ret: List[float]
+
+class FrontierResponse(BaseModel):
+    efPoints: List[PortfolioPoint]
+    maxSharpe: Optional[PortfolioPoint]
+    minVol: Optional[PortfolioPoint]
+    assetPoints: AssetPoints
+    warnings: List[str]
