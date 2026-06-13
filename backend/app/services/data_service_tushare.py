@@ -3,7 +3,7 @@ Tushare data service for A-share ETF daily prices.
 Uses fund_daily (raw close) + fund_adj (adjustment factor) and applies
 forward-adjustment so series is continuous across splits/dividends.
 
-Pattern follows 实盘/ETF实盘代码/strategy_sharpe_ma252_divlv_gv_5050.py.
+Pattern follows standard Tushare fund_daily + fund_adj forward-adjustment.
 """
 
 import os

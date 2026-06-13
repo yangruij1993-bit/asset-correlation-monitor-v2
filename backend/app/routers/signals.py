@@ -11,53 +11,21 @@ from app.services.generic_signal_parser import generic_signal_parser
 
 router = APIRouter(prefix="/api/v1/signals", tags=["Strategy Signals"])
 
-# Legacy parser: only loaded if STRATEGY_DATA_DIR is configured
-_legacy_parser = None
-if os.getenv("STRATEGY_DATA_DIR"):
-    try:
-        from app.services.legacy_signal_parser import signal_parser as _legacy
-        _legacy_parser = _legacy
-    except Exception:
-        pass
-
 
 def _get_overview(strategy_id: str) -> SignalOverview | None:
-    # Generic first
-    result = generic_signal_parser.get_overview(strategy_id)
-    if result:
-        return result
-    # Legacy fallback
-    if _legacy_parser:
-        return _legacy_parser.get_overview(strategy_id)
-    return None
+    return generic_signal_parser.get_overview(strategy_id)
 
 
 def _get_overviews() -> list[SignalOverview]:
-    results = generic_signal_parser.get_overviews()
-    if _legacy_parser:
-        for ov in _legacy_parser.get_overviews():
-            if not any(r.strategy_id == ov.strategy_id for r in results):
-                results.append(ov)
-    return results
+    return generic_signal_parser.get_overviews()
 
 
 def _get_detail(strategy_id: str) -> SignalDetail | None:
-    result = generic_signal_parser.get_detail(strategy_id)
-    if result:
-        return result
-    if _legacy_parser:
-        return _legacy_parser.get_detail(strategy_id)
-    return None
+    return generic_signal_parser.get_detail(strategy_id)
 
 
 def _get_history(strategy_id: str, limit: int = 30) -> list[SignalHistoryItem]:
-    items = generic_signal_parser.get_history(strategy_id, limit)
-    if items:
-        return items
-    if _legacy_parser:
-        raw = _legacy_parser.get_history(strategy_id, limit)
-        return [SignalHistoryItem(**item) for item in raw]
-    return []
+    return generic_signal_parser.get_history(strategy_id, limit)
 
 
 async def _save_signal_snapshot(overview: SignalOverview):
@@ -142,25 +110,14 @@ async def get_nav(strategy_id: str):
 
     # 2. Generic parser
     result = generic_signal_parser.get_nav(strategy_id)
-    if result:
-        return result
-
-    # 3. Legacy fallback
-    if _legacy_parser:
-        from app.services.nav_builder import nav_builder
-        from app.services.legacy_signal_parser import STRATEGY_PATHS
-        if strategy_id in STRATEGY_PATHS:
-            if strategy_id == "macro-6cycle":
-                result = await nav_builder.async_build_macro_6cycle_nav() if hasattr(nav_builder, 'async_build_macro_6cycle_nav') else None
-            else:
-                result = nav_builder.get_nav(strategy_id)
-
     if result is None:
         raise HTTPException(status_code=404, detail=f"NAV data not found for {strategy_id}")
 
     metrics = None
     try:
-        metrics = nav_builder.compute_metrics(strategy_id)
+        detail = generic_signal_parser.get_detail(strategy_id)
+        if detail and detail.metrics:
+            metrics = detail.metrics
     except Exception:
         pass
     await _save_nav_cache(strategy_id, result, metrics)
@@ -213,14 +170,3 @@ async def get_history(strategy_id: str, limit: int = 30):
         pass
 
     return _get_history(strategy_id, limit)
-
-
-# ── Scheduler status (optional) ────────────────────────────────
-
-@router.get("/scheduler/status")
-async def scheduler_status():
-    try:
-        from app.services.strategy_scheduler import get_scheduler_status
-        return get_scheduler_status()
-    except Exception:
-        return {"running": False, "jobs": [], "last_runs": {}}

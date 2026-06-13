@@ -8,8 +8,6 @@ import os
 from app.routers import analysis, frontier, signals
 from app.services.data_service import data_service
 
-SCHEDULER_ENABLED = os.getenv("STRATEGY_SCHEDULER", "false").lower() == "true" and bool(os.getenv("STRATEGY_DATA_DIR"))
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,14 +29,7 @@ async def lifespan(app: FastAPI):
         await analysis_service._persist_garch()
         await analysis_service._persist_kalman()
         print("GARCH/Kalman computed and persisted to PG")
-    # 4. Scheduler
-    if SCHEDULER_ENABLED:
-        from app.services.strategy_scheduler import start_scheduler
-        start_scheduler()
     yield
-    if SCHEDULER_ENABLED:
-        from app.services.strategy_scheduler import stop_scheduler
-        stop_scheduler()
     await close_pool()
     print("Asset Correlation Monitor API shutdown")
 
