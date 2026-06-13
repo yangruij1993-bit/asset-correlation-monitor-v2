@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { SignalOverview, NavCurve, BacktestMetrics } from "@/lib/types";
 import { fetchSignalOverviews, fetchNavCurve, fetchSignalMetrics } from "@/lib/api";
-import { TrendingUp, Activity, BarChart3, LineChart, AlertTriangle, Inbox } from "lucide-react";
+import { Activity, BarChart3, LineChart, AlertTriangle, Inbox } from "lucide-react";
 import clsx from "clsx";
 import {
   LineChart as RechartsLineChart, Line, XAxis, YAxis, Tooltip,
@@ -270,7 +270,7 @@ function MetricsSection({ strategyId }: { strategyId: string }) {
 }
 
 // ── Momentum Timing Detail (for spmo-usmv-64) ────────────────
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MomentumTimingDetail({ detail }: { detail: Record<string, unknown> }) {
   const regime = detail.vol_regime as string;
   const isLowVol = regime === "long";
@@ -357,6 +357,7 @@ const REGION_LABELS: Record<string, string> = {
   cn1000: "中证1000",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function CnUsHkTimingDetail({ detail }: { detail: Record<string, unknown> }) {
   const situation = detail.current_situation as Record<string, Record<string, unknown>> || {};
   const allocs = [

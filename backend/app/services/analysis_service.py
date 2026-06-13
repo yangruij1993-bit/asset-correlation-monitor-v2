@@ -9,9 +9,9 @@ from .kalman import garch_standardize, compute_obs, kalman_filter_1d
 
 class AnalysisService:
     SENSITIVITY_CONFIG = {
-        "fast": {"Q": 0.0001, "label": "Fast"},
-        "standard": {"Q": 0.00005, "label": "Standard"},
-        "smooth": {"Q": 0.00001, "label": "Smooth"},
+        "fast": {"Q": 0.005, "label": "Fast"},
+        "standard": {"Q": 0.001, "label": "Standard"},
+        "smooth": {"Q": 0.0005, "label": "Smooth"},
     }
     KALMAN_R = 0.5
 

@@ -36,7 +36,6 @@ import {
   fetchPortfolioStats,
   AssetGroup, Sensitivity
 } from "@/lib/api";
-import { ALL_ASSET_TICKERS } from "@/lib/labels";
 
 import {
   SummaryStat, MatrixResponse, RollingResponse,
@@ -174,7 +173,7 @@ export default function Dashboard() {
           const parsed = JSON.parse(savedDefaults);
           // Only use if the tickers match
           if (Array.isArray(parsed) && parsed.length === data.summary.length) {
-            setForwardRows(parsed);
+            setForwardRows(parsed.map((r: AssetRow) => ({ ...r, include: false })));
             setUsingSavedDefaults(true);
             setFrontierData(null);
             return;
@@ -187,7 +186,7 @@ export default function Dashboard() {
       setForwardRows(data.summary.map(s => ({
         ticker: s.ticker,
         name: s.ticker,
-        include: ALL_ASSET_TICKERS.includes(s.ticker),
+        include: false,
         mu: s.cagr_all !== null ? parseFloat((s.cagr_all * 100).toFixed(2)) : 5.0,
         sigma: s.vol_all !== null ? parseFloat((s.vol_all * 100).toFixed(2)) : 15.0,
       })));

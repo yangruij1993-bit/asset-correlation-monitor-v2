@@ -70,9 +70,10 @@ def _ewma_fallback(returns: np.ndarray, span: int = 20, min_periods: int = 10) -
 
 
 def compute_obs(std_i: pd.Series, std_j: pd.Series) -> pd.Series:
-    """Observation = product of two GARCH-standardized return series."""
+    """Observation = product of two GARCH-standardized return series, clipped to [-1, 1]."""
     common_idx = std_i.index.intersection(std_j.index)
-    return std_i.loc[common_idx] * std_j.loc[common_idx]
+    obs = std_i.loc[common_idx] * std_j.loc[common_idx]
+    return obs.clip(-1.0, 1.0)
 
 
 def kalman_filter_1d(
