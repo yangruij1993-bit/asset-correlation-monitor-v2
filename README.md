@@ -78,15 +78,3 @@ npm run dev -- -p 3012
 ```
 
 打开 [http://localhost:3012](http://localhost:3012)。
-
-## ngrok 分享
-
-只需一个隧道 — 后端同时提供 API 和前端静态文件：
-
-```bash
-ngrok http 8012
-# 获取 URL 如 https://xxxx.ngrok-free.app
-cd frontend
-NEXT_PUBLIC_API_URL=https://xxxx.ngrok-free.app/api/v1/analysis npx next build
-# 重启后端即可 — 自动托管 frontend/out/ 静态文件
-```
