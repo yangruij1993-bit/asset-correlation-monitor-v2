@@ -69,11 +69,16 @@ def _ewma_fallback(returns: np.ndarray, span: int = 20, min_periods: int = 10) -
     return np.maximum(rolling_std.values, 1e-8)
 
 
-def compute_obs(std_i: pd.Series, std_j: pd.Series) -> pd.Series:
-    """Observation = product of two GARCH-standardized return series, clipped to [-1, 1]."""
+def compute_obs(std_i: pd.Series, std_j: pd.Series, window: int = 60) -> pd.Series:
+    """Observation = rolling Pearson correlation of GARCH-standardized returns.
+
+    Uses a short rolling window to provide a noisy but unbiased correlation
+    estimate for the Kalman filter to smooth.
+    """
     common_idx = std_i.index.intersection(std_j.index)
-    obs = std_i.loc[common_idx] * std_j.loc[common_idx]
-    return obs.clip(-1.0, 1.0)
+    si = std_i.loc[common_idx]
+    sj = std_j.loc[common_idx]
+    return si.rolling(window, min_periods=max(10, window // 2)).corr(sj)
 
 
 def kalman_filter_1d(
@@ -82,6 +87,7 @@ def kalman_filter_1d(
     R: float = 0.5,
     rho_init: float = 0.0,
     P_init: float = 1.0,
+    obs_clip: float = 3.0,
 ) -> np.ndarray:
     """1D Kalman filter with phi=1 (random walk) for time-varying correlation.
 
@@ -91,6 +97,7 @@ def kalman_filter_1d(
         R: Observation noise variance
         rho_init: Initial correlation estimate
         P_init: Initial state variance
+        obs_clip: Clip observations to [-obs_clip, obs_clip] to limit outlier impact
 
     Returns:
         Array of filtered correlation estimates (same length as obs)
@@ -109,7 +116,8 @@ def kalman_filter_1d(
             rho[t] = rho_pred
         else:
             K = P_pred / (P_pred + R)
-            rho[t] = rho_pred + K * (obs[t] - rho_pred)
+            o = min(max(obs[t], -obs_clip), obs_clip)
+            rho[t] = rho_pred + K * (o - rho_pred)
             P = (1.0 - K) * P_pred
             P_prev = P
 
