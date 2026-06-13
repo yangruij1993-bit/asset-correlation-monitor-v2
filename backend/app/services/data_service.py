@@ -81,8 +81,12 @@ class DataService:
             # Check staleness
             last_date = pd.to_datetime(pg_df.index[-1]).date()
             today = datetime.now().date()
-            if (today - last_date).days > 3:
-                logger.info("PG data stale, refreshing...")
+            missing_tickers = [t for t in ALL_ASSETS if t not in pg_df.columns]
+            if (today - last_date).days > 3 or missing_tickers:
+                if missing_tickers:
+                    logger.info(f"PG data missing configured tickers, refreshing: {missing_tickers}")
+                else:
+                    logger.info("PG data stale, refreshing...")
                 new_data = self.refresh_data()
                 if not new_data.empty:
                     await self._persist_to_pg(new_data, source="refresh")

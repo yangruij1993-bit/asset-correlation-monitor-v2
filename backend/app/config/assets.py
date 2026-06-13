@@ -3,7 +3,7 @@ Centralized asset configuration.
 Each group is independent — no cross-group mixing.
 """
 
-# ===== US Equities (original + USMV, QQQI, DIVO) =====
+# ===== US Equities (original + USMV, SPMO, QQQI, DIVO) =====
 US_EQUITIES = {
     "SPY": "S&P 500",
     "VXUS": "Intl ex-US",
@@ -14,6 +14,7 @@ US_EQUITIES = {
     "VNQ": "Real Estate",
     "COWZ": "Pacer US Cash Cows",
     "USMV": "US Min Vol",
+    "SPMO": "S&P 500 Momentum",
     "QQQI": "Naz 100 Covered Call",
     "DIVO": "Dividend Growers Intl",
 }

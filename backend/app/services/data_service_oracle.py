@@ -27,6 +27,7 @@ _oracle_initialized = False
 US_TICKER_TO_ORACLE = {
     "QQQ": "QQQ.O",
     "USMV": "USMV.BAT",
+    "SPMO": "SPMO.P",
     "XLF": "XLF.P",
     "XLE": "XLE.P",
     "XLK": "XLK.P",

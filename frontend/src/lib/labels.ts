@@ -22,7 +22,7 @@ export function heatmapDisplay(ticker: string): string {
 
 export const ALL_ASSET_TICKERS = [
   // US Equities
-  "SPY", "VXUS", "QQQ", "IWM", "VOOV", "VOOG", "VNQ", "COWZ", "USMV", "QQQI", "DIVO",
+  "SPY", "VXUS", "QQQ", "IWM", "VOOV", "VOOG", "VNQ", "COWZ", "USMV", "SPMO", "QQQI", "DIVO",
   // US Fixed Income
   "VGSH", "AGG", "TIP", "IEF", "HYG", "LQD", "TLT",
   // Commodities & Alts
@@ -56,6 +56,7 @@ export const TICKER_DEFINITIONS: Record<string, string> = {
   VNQ: "Real Estate",
   COWZ: "Pacer US Cash Cows",
   USMV: "US Min Vol",
+  SPMO: "S&P 500 Momentum",
   QQQI: "Naz 100 Covered Call",
   DIVO: "Dividend Growers Intl",
   SPY: "SPDR S&P 500",
